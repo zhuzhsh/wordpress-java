@@ -1,8 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<properties>
-		<slf4jVersion>1.7.7</slf4jVersion>
-	</properties>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>wordpress-java</groupId>
 	<artifactId>wordpress-java</artifactId>
@@ -18,14 +15,15 @@
 	</repositories>
 	<dependencies>
 		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>redstone.xmlrpc</groupId>
 			<artifactId>xmlrpc</artifactId>
 			<version>1.1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4jVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>

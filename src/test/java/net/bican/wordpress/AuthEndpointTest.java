@@ -15,14 +15,14 @@ public class AuthEndpointTest {
     Endpoint endpoint2 = new Endpoint("http://xxxabc");
     Endpoint endpoint3 = new Endpoint("http://xxx");
     AuthEndpoint.getInstance(authentication1, endpoint1);
-    assertEquals(1, AuthEndpoint.authEndpointInstances.size());
+    assertEquals(1, AuthEndpoint.AUTHENDPOINTINSTANCES.size());
     AuthEndpoint.getInstance(authentication2, endpoint1);
-    assertEquals(2, AuthEndpoint.authEndpointInstances.size());
+    assertEquals(2, AuthEndpoint.AUTHENDPOINTINSTANCES.size());
     AuthEndpoint.getInstance(authentication3, endpoint1);
-    assertEquals(2, AuthEndpoint.authEndpointInstances.size());
+    assertEquals(2, AuthEndpoint.AUTHENDPOINTINSTANCES.size());
     AuthEndpoint.getInstance(authentication3, endpoint2);
-    assertEquals(3, AuthEndpoint.authEndpointInstances.size());
+    assertEquals(3, AuthEndpoint.AUTHENDPOINTINSTANCES.size());
     AuthEndpoint.getInstance(authentication3, endpoint3);
-    assertEquals(3, AuthEndpoint.authEndpointInstances.size());
+    assertEquals(3, AuthEndpoint.AUTHENDPOINTINSTANCES.size());
   }
 }

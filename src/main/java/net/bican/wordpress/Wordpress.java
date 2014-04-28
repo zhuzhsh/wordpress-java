@@ -1,15 +1,10 @@
 package net.bican.wordpress;
 
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
 
 import redstone.xmlrpc.XmlRpcArray;
 import redstone.xmlrpc.XmlRpcFault;
@@ -17,19 +12,34 @@ import redstone.xmlrpc.XmlRpcProxy;
 import redstone.xmlrpc.XmlRpcStruct;
 
 public class Wordpress {
-  private static final String                 WP_XMLRPC_PREFIX   = "wp";              //$NON-NLS-1$
+  private interface WordpressBridge {
+    XmlRpcArray getPosts(Integer blog_id, String username, String password)
+        throws XmlRpcFault;
+
+    XmlRpcArray getPosts(Integer blog_id, String username, String password,
+        XmlRpcStruct filter, XmlRpcArray fields) throws XmlRpcFault;
+
+    XmlRpcArray getPosts(Integer blog_id, String username, String password,
+        XmlRpcStruct filter) throws XmlRpcFault;
+
+    XmlRpcArray getPosts(Integer blog_id, String username, String password,
+        String filter, XmlRpcArray fields) throws XmlRpcFault;
+
+    Boolean deletePost(Integer blogid, String username, String password,
+        Integer post_id) throws XmlRpcFault;
+
+    String newPost(Integer blog_id, String username, String password,
+        XmlRpcStruct content) throws XmlRpcFault;
+  }
+
+  private static final String                 WP_XMLRPC_PREFIX   = "wp";           //$NON-NLS-1$
   private static final Integer                INT_ZERO           = Integer
                                                                      .valueOf(0);
-  private Logger                              logger             = LoggerFactory
-                                                                     .getLogger(this
-                                                                         .getClass());
 
   private static Map<AuthEndpoint, Wordpress> wordpressInstances = new HashMap<>();
 
   public static Wordpress getInstance(Authentication authentication,
-      Endpoint endpoint) {
-    Preconditions.checkNotNull(authentication);
-    Preconditions.checkNotNull(endpoint);
+      Endpoint endpoint) throws MalformedURLException {
     AuthEndpoint ae = AuthEndpoint.getInstance(authentication, endpoint);
     if (wordpressInstances.containsKey(ae))
       return wordpressInstances.get(ae);
@@ -44,23 +54,61 @@ public class Wordpress {
 
   private WordpressBridge wp;
 
-  private Wordpress(Authentication authentication, Endpoint endpoint) {
+  private Wordpress(Authentication authentication, Endpoint endpoint)
+      throws MalformedURLException {
     this.authentication = authentication;
     this.endpoint = endpoint;
     this.wp = (WordpressBridge) XmlRpcProxy.createProxy(
         this.endpoint.getXmlRpc(), WP_XMLRPC_PREFIX,
-        new Class[] { WordpressBridge.class }, true);
+        new Class[] { WordpressBridge.class }, false);
   }
 
-  public Set<Post> getPosts(Optional<PostFilter> postFilter) {
+  public Set<Post> getPosts() throws WordpressException {
+    return this.getPosts(null, null);
+  }
+
+  public Set<Post> getPosts(PostFilter filter) throws WordpressException {
+    return this.getPosts(filter, null);
+  }
+
+  public Set<Post> getPosts(Set<String> fields) throws WordpressException {
+    return this.getPosts(null, fields);
+  }
+
+  public void deletePost(Integer postId) throws WordpressException {
     try {
-      XmlRpcStruct filter = null;
-      if (postFilter.isPresent()) {
-        filter = postFilter.get().toXmlRpcStruct();
+      this.wp.deletePost(INT_ZERO, this.authentication.getUser(),
+          this.authentication.getPassword(), postId);
+    } catch (XmlRpcFault e) {
+      throw new WordpressException(e.errorCode);
+    }
+  }
+
+  public Set<Post> getPosts(PostFilter filter, Set<String> fields)
+      throws WordpressException {
+    try {
+      XmlRpcArray result;
+      XmlRpcStruct postFilter = null;
+      XmlRpcArray postFields = null;
+      if (filter != null) {
+        postFilter = filter.toXmlRpcStruct();
       }
-      XmlRpcArray result = this.wp.getPosts(INT_ZERO, INT_ZERO,
-          this.authentication.getUser(), this.authentication.getPassword(),
-          filter);
+      if (fields != null) {
+        postFields = XmlRpcArrays.fromSet(fields);
+      }
+      if ((filter != null) && (fields != null)) {
+        result = this.wp.getPosts(INT_ZERO, this.authentication.getUser(),
+            this.authentication.getPassword(), postFilter, postFields);
+      } else if ((filter == null) && (fields == null)) {
+        result = this.wp.getPosts(INT_ZERO, this.authentication.getUser(),
+            this.authentication.getPassword());
+      } else if ((filter == null) && (fields != null)) {
+        result = this.wp.getPosts(INT_ZERO, this.authentication.getUser(),
+            this.authentication.getPassword(), "", postFields); //$NON-NLS-1$
+      } else {
+        result = this.wp.getPosts(INT_ZERO, this.authentication.getUser(),
+            this.authentication.getPassword(), postFilter);
+      }
       Set<Post> lst = new HashSet<>();
       for (Object s : result.toArray()) {
         Post post = new Post();
@@ -69,8 +117,7 @@ public class Wordpress {
       }
       return lst;
     } catch (XmlRpcFault e) {
-      this.logger.error("getPosts() fails: " + e.getLocalizedMessage()); //$NON-NLS-1$
-      return null;
+      throw new WordpressException(e.errorCode);
     }
   }
 }

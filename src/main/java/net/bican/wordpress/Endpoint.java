@@ -1,5 +1,6 @@
 package net.bican.wordpress;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import com.google.common.base.Objects;
@@ -29,9 +30,8 @@ public class Endpoint {
     return Objects.equal(this.blogUrl, other.blogUrl);
   }
 
-  public URL getXmlRpc() {
-    // TODO Auto-generated method stub
-    return null;
+  public URL getXmlRpc() throws MalformedURLException { // TODO daha akıllı
+    return new URL(this.blogUrl + "/xmlrpc.php"); //$NON-NLS-1$
   }
 
 }

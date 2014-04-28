@@ -14,4 +14,12 @@ public class Site {
     this.endpoint = endpoint;
   }
 
+  public Authentication getAuthentication() {
+    return this.authentication;
+  }
+
+  public Endpoint getEndpoint() {
+    return this.endpoint;
+  }
+
 }

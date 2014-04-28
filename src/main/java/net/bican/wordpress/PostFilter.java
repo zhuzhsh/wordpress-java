@@ -1,12 +1,12 @@
 package net.bican.wordpress;
 
 public class PostFilter extends XmlRpcMapped {
-  private String  post_type;
-  private String  post_status;
-  private Integer number;
-  private Integer offset;
-  private String  orderby;
-  private String  order;
+  String  post_type;
+  String  post_status;
+  Integer number;
+  Integer offset;
+  String  orderby;
+  String  order;
 
   public Integer getNumber() {
     return this.number;

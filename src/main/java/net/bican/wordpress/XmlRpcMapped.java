@@ -64,12 +64,8 @@ public abstract class XmlRpcMapped {
         }
       } catch (IllegalArgumentException e) {
         try {
-          System.err.println("Warning: value \"" + v + "\" is invalid for \""
-              + k + "\", setting it to \"null\"");
           field.set(this, null);
         } catch (IllegalAccessException e1) {
-          System.err.println(field.getName() + ":" + field.getType() + ":"
-              + x.get(field.getName()));
           e1.printStackTrace();
         }
       } catch (IllegalAccessException e) {
